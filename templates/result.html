@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fever Analysis Result - Professional Medical Report</title>
+    <style>
+        /* === Reset and Base === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* === Background Pattern === */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="1"/></g></svg>') repeat;
+            z-index: -1;
+        }
+
+        /* === Main Container === */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        /* === Header Section === */
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="medical" patternUnits="userSpaceOnUse" width="20" height="20"><path d="M10 0v20M0 10h20" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23medical)"/></svg>');
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .result-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .result-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+        }
+
+        /* === Content Section === */
+        .content {
+            padding: 3rem 2rem;
+        }
+
+        /* === Main Result Card === */
+        .result-card {
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .prediction-label {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .prediction-result {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* === Confidence Meter === */
+        .confidence-section {
+            margin: 2rem 0;
+        }
+
+        .confidence-label {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-meter {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e, #16a34a);
+            border-radius: 6px;
+            transition: width 2s ease-out;
+            position: relative;
+            animation: fillAnimation 2s ease-out;
+        }
+
+        .confidence-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        .confidence-percentage {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #16a34a;
+            margin-top: 0.5rem;
+        }
+
+        /* === Details Grid === */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .detail-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #4a90e2;
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-description {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* === Recommendations Section === */
+        .recommendations {
+            background: linear-gradient(135deg, #fef3e2, #fff7ed);
+            border: 2px solid #fed7aa;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .recommendations-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ea580c;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid #fed7aa;
+        }
+
+        .recommendation-icon {
+            font-size: 1.5rem;
+            color: #ea580c;
+            margin-top: 0.2rem;
+        }
+
+        .recommendation-text {
+            color: #374151;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* === Action Buttons === */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+        }
+
+        .secondary-btn {
+            background: white;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+        }
+
+        .secondary-btn:hover {
+            background: #4a90e2;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* === Medical Disclaimer === */
+        .medical-disclaimer {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .disclaimer-icon {
+            font-size: 1.5rem;
+            color: #dc2626;
+            margin-bottom: 0.5rem;
+        }
+
+        .disclaimer-text {
+            color: #7f1d1d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* === Animations === */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fillAnimation {
+            from { width: 0%; }
+            to { width: var(--confidence-width); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* === Responsive Design === */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .result-title {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 2rem 1rem;
+            }
+
+            .result-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .prediction-result {
+                font-size: 2rem;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .result-icon {
+                font-size: 3rem;
+            }
+
+            .prediction-result {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-content">
+                <div class="result-icon">📊</div>
+                <h1 class="result-title">Fever Analysis Complete</h1>
+                <p class="result-subtitle">AI-powered medical analysis results</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Main Result Card -->
+            <div class="result-card">
+                <p class="prediction-label">Your predicted fever variant is:</p>
+                <h2 class="prediction-result">{{ result }}</h2>
+                
+                <!-- Confidence Meter -->
+                <div class="confidence-section">
+                    <p class="confidence-label">Analysis Confidence Level</p>
+                    <div class="confidence-meter">
+                        <div class="confidence-fill" style="--confidence-width: {{ confidence }}%"></div>
+                    </div>
+                    <div class="confidence-percentage">{{ confidence }}%</div>
+                </div>
+            </div>
+
+            <!-- Analysis Details Grid -->
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-icon">🔬</div>
+                    <h3 class="detail-title">AI Analysis</h3>
+                    <p class="detail-description">
+                        Advanced machine learning algorithms analyzed your symptoms against thousands of medical cases 
+                        to provide this prediction with high accuracy.
+                    </p>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">⚡</div>
+                    <h3 class="detail-title">Instant Results</h3>
+                    <p class="detail-description">
+                        Real-time analysis completed in seconds using state-of-the-art medical AI models 
+                        trained on comprehensive fever datasets.
+                    </p>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🛡️</div>
+                    <h3 class="detail-title">Privacy Protected</h3>
+                    <p class="detail-description">
+                        Your health data is processed securely and never stored. All analysis is performed 
+                        in real-time with complete privacy protection.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="recommendations">
+                <h3 class="recommendations-title">💡 Recommended Next Steps</h3>
+                <div class="recommendation-list">
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">👨‍⚕️</div>
+                        <div class="recommendation-text">
+                            <strong>Consult a Healthcare Provider:</strong> Schedule an appointment with your doctor 
+                            to discuss these symptoms and get professional medical evaluation.
+                        </div>
+                    </div>
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">📋</div>
+                        <div class="recommendation-text">
+                            <strong>Monitor Your Symptoms:</strong> Keep track of your temperature and symptoms, 
+                            noting any changes or new symptoms that develop.
+                        </div>
+                    </div>
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">💊</div>
+                        <div class="recommendation-text">
+                            <strong>Follow Treatment Guidelines:</strong> If prescribed medication, take as directed 
+                            and complete the full course of treatment.
+                        </div>
+                    </div>
+                    <div class="recommendation-item">
+                        <div class="recommendation-icon">🏠</div>
+                        <div class="recommendation-text">
+                            <strong>Rest and Hydration:</strong> Get adequate rest and maintain proper hydration 
+                            to support your body's recovery process.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/" class="action-btn primary-btn">
+                    🔄 Analyze Another Case
+                </a>
+                <a href="#" class="action-btn secondary-btn" onclick="window.print()">
+                    🖨️ Print Report
+                </a>
+            </div>
+
+            <!-- Medical Disclaimer -->
+            <div class="medical-disclaimer">
+                <div class="disclaimer-icon">⚠️</div>
+                <p class="disclaimer-text">
+                    <strong>Medical Disclaimer:</strong> This analysis is for informational purposes only and should not 
+                    replace professional medical advice. Always consult with a qualified healthcare provider for proper 
+                    diagnosis and treatment. This tool does not provide medical diagnosis or treatment recommendations.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate confidence meter on load
+            const confidenceFill = document.querySelector('.confidence-fill');
+            const confidence = {{ confidence }};
+            
+            // Set initial width to 0
+            confidenceFill.style.width = '0%';
+            
+            // Animate to actual confidence level
+            setTimeout(() => {
+                confidenceFill.style.width = confidence + '%';
+            }, 500);
+
+            // Add print functionality
+            function printReport() {
+                window.print();
+            }
+
+            // Add smooth scroll to top when page loads
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fever Variant Predictor - Professional Medical Analysis</title>
+    <style>
+        /* === Reset and Base === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* === Background Pattern === */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="1"/></g></svg>') repeat;
+            z-index: -1;
+        }
+
+        /* === Main Container === */
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 1px 0 rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        /* === Header Section === */
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="medical" patternUnits="userSpaceOnUse" width="20" height="20"><path d="M10 0v20M0 10h20" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23medical)"/></svg>');
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .medical-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* === Content Section === */
+        .content {
+            padding: 3rem 2rem;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* === Security Badge === */
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .security-icon {
+            width: 24px;
+            height: 24px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* === Form Styling === */
+        .symptom-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .symptom-section:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: #4a90e2;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .symptom-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .symptom-item:hover {
+            border-color: #4a90e2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        }
+
+        .symptom-item.selected {
+            border-color: #4a90e2;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        .symptom-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .symptom-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .symptom-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .symptom-item.selected .symptom-description {
+            opacity: 0.9;
+        }
+
+        /* === Temperature Input === */
+        .temperature-section {
+            background: linear-gradient(135deg, #fff7ed, #fef3e2);
+            border: 2px solid #fed7aa;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .temp-input-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .temp-icon {
+            font-size: 2rem;
+            color: #ea580c;
+        }
+
+        .temp-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid #fed7aa;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .temp-input:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+
+        .temp-unit {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ea580c;
+        }
+
+        /* === Submit Button === */
+        .submit-container {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        /* === Loading State === */
+        .submit-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .submit-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* === Footer Info === */
+        .info-footer {
+            background: #f1f5f9;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .disclaimer {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .disclaimer strong {
+            color: #ef4444;
+        }
+
+        /* === Animations === */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* === Responsive Design === */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 2rem 1rem;
+            }
+
+            .symptom-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .temp-input-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .submit-btn {
+                padding: 1rem 2rem;
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .main-title {
+                font-size: 1.8rem;
+            }
+
+            .medical-icon {
+                font-size: 3rem;
+            }
+
+            .symptom-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-content">
+                <div class="medical-icon">🩺</div>
+                <h1 class="main-title">Fever Variant Predictor</h1>
+                <p class="main-subtitle">
+                    Advanced AI-powered analysis to identify potential fever types based on your symptoms. 
+                    Get instant medical insights with professional-grade accuracy.
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="form-container">
+                <!-- Security Badge -->
+                <div class="security-badge">
+                    <div class="security-icon">✓</div>
+                    <span><strong>Secure & Private</strong> - Your health data is protected and not stored</span>
+                </div>
+
+                <form action="/predict" method="POST" id="feverForm">
+                    <!-- Headache Section -->
+                    <div class="symptom-section">
+                        <h3 class="section-title">🤕 Headache Symptoms</h3>
+                        <div class="symptom-grid">
+                            <label class="symptom-item">
+                                <input type="radio" name="headache" value="0" checked>
+                                <div class="symptom-label">No Headache</div>
+                                <div class="symptom-description">No head pain or discomfort present</div>
+                            </label>
+                            <label class="symptom-item">
+                                <input type="radio" name="headache" value="1">
+                                <div class="symptom-label">Mild to Severe</div>
+                                <div class="symptom-description">Experiencing head pain or pressure</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Chills Section -->
+                    <div class="symptom-section">
+                        <h3 class="section-title">🥶 Chills & Shivering</h3>
+                        <div class="symptom-grid">
+                            <label class="symptom-item">
+                                <input type="radio" name="chills" value="0" checked>
+                                <div class="symptom-label">No Chills</div>
+                                <div class="symptom-description">Normal body temperature regulation</div>
+                            </label>
+                            <label class="symptom-item">
+                                <input type="radio" name="chills" value="1">
+                                <div class="symptom-label">Experiencing Chills</div>
+                                <div class="symptom-description">Shivering or feeling cold despite warmth</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Body Pain Section -->
+                    <div class="symptom-section">
+                        <h3 class="section-title">💪 Body Aches & Pain</h3>
+                        <div class="symptom-grid">
+                            <label class="symptom-item">
+                                <input type="radio" name="body_pain" value="0" checked>
+                                <div class="symptom-label">No Body Pain</div>
+                                <div class="symptom-description">No muscle or joint discomfort</div>
+                            </label>
+                            <label class="symptom-item">
+                                <input type="radio" name="body_pain" value="1">
+                                <div class="symptom-label">Body Aches Present</div>
+                                <div class="symptom-description">Muscle soreness or joint pain</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Fatigue Section -->
+                    <div class="symptom-section">
+                        <h3 class="section-title">😴 Fatigue & Energy Levels</h3>
+                        <div class="symptom-grid">
+                            <label class="symptom-item">
+                                <input type="radio" name="fatigue" value="0" checked>
+                                <div class="symptom-label">Normal Energy</div>
+                                <div class="symptom-description">Feeling alert and energetic</div>
+                            </label>
+                            <label class="symptom-item">
+                                <input type="radio" name="fatigue" value="1">
+                                <div class="symptom-label">Feeling Tired</div>
+                                <div class="symptom-description">Unusual fatigue or weakness</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Rash Section -->
+                    <div class="symptom-section">
+                        <h3 class="section-title">🔴 Skin Conditions</h3>
+                        <div class="symptom-grid">
+                            <label class="symptom-item">
+                                <input type="radio" name="rash" value="0" checked>
+                                <div class="symptom-label">No Rash</div>
+                                <div class="symptom-description">Clear, normal skin appearance</div>
+                            </label>
+                            <label class="symptom-item">
+                                <input type="radio" name="rash" value="1">
+                                <div class="symptom-label">Rash Present</div>
+                                <div class="symptom-description">Visible skin irritation or rash</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Temperature Section -->
+                    <div class="temperature-section">
+                        <h3 class="section-title">🌡️ Current Body Temperature</h3>
+                        <div class="temp-input-container">
+                            <div class="temp-icon">🌡️</div>
+                            <input type="number" name="temperature" class="temp-input" 
+                                   placeholder="98.6" step="0.1" min="95" max="110" required>
+                            <div class="temp-unit">°F</div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="submit-container">
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            🔍 Analyze Fever Pattern
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="info-footer">
+            <div class="disclaimer">
+                <strong>Medical Disclaimer:</strong> This tool provides preliminary analysis only and should not replace professional medical advice. 
+                Always consult with a healthcare provider for proper diagnosis and treatment.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle symptom item selection
+            const symptomItems = document.querySelectorAll('.symptom-item');
+            
+            symptomItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    const name = radio.name;
+                    
+                    // Remove selected class from all items with same name
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                        r.closest('.symptom-item').classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked item
+                    this.classList.add('selected');
+                    radio.checked = true;
+                });
+            });
+
+            // Set initial selected states
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                radio.closest('.symptom-item').classList.add('selected');
+            });
+
+            // Handle form submission
+            const form = document.getElementById('feverForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            form.addEventListener('submit', function(e) {
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = 'Analyzing Symptoms...';
+            });
+
+            // Temperature input validation
+            const tempInput = document.querySelector('.temp-input');
+            tempInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (value < 95 || value > 110) {
+                    this.style.borderColor = '#ef4444';
+                } else {
+                    this.style.borderColor = '#fed7aa';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

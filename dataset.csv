@@ -1,0 +1,16 @@
+headache,chills,body_pain,fatigue,rash,temperature,fever_type
+1,1,1,1,0,103,Dengue
+1,1,1,1,1,105,Dengue
+0,1,1,0,0,102,Malaria
+1,0,1,1,0,101,Malaria
+0,0,0,0,0,98,Normal
+1,1,0,1,1,104,Typhoid
+1,0,0,1,1,102,Typhoid
+0,0,0,0,0,98,Normal
+0,0,0,0,0,99,Normal
+1,0,1,1,0,100,Malaria
+1,1,1,1,1,106,Dengue
+1,1,0,1,1,102,Typhoid
+0,1,1,0,0,101,Malaria
+1,1,1,0,1,104,Dengue
+0,0,0,1,0,99,Normal
